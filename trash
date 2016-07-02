@@ -1,0 +1,24 @@
+{{end}}
+nop{{end}}
+pushad
+popad{{end}}
+pushfd
+popfd{{end}}
+jmp $+2{{end}}
+push {{ rand_reg }}
+add {{ rand_reg }}, {{ rand_int }}
+pop {{ rand_reg }}{{end}}
+inc {{ rand_reg }}
+dec {{ rand_reg }}{{end}}
+dec {{ rand_reg }}
+inc {{ rand_reg }}{{end}}
+add {{ rand_reg }},2
+dec {{ rand_reg }}
+dec {{ rand_reg }}{{end}}
+sub {{ rand_reg }},1
+inc {{ rand_reg }}{{end}}
+push {{ rand_reg }}
+call $+5
+pop {{ rand_reg }}
+pop {{ rand_reg }}
+{{end}}
