@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import os, sys, getopt
 import pefile
 import pydasm
@@ -14,15 +12,9 @@ from tornado.template import Template
 from random import randint
 from SectionDoubleP import *
 
-'''
-	Split a file into chunks of designated size. Might be useful if simple encoding of the 
-	text/code section is ineffective and you need to locate the offending portions
-	of the pe file that are triggering signature-based detection
-'''
-
 def randstring(n):
-    a = string.ascii_letters + string.digits
-    return ''.join([random.choice(a) for i in range(n)]).lower()
+	a = string.ascii_letters + string.digits
+	return ''.join([random.choice(a) for i in range(n)]).lower()
 
 def chunk_file (file, chunk_size):
 	# make folder to hold file chunks
