@@ -5,7 +5,6 @@
     
     by n0p
 """
-
 import pefile, pydasm, sys
 
 class SectionDoublePError(Exception):

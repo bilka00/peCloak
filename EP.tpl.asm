@@ -7,3 +7,4 @@ use32
     mov ax,4c00h
     int 21h
     Go:
+    xor eax,eax

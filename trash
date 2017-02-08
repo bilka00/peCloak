@@ -1,6 +1,9 @@
 {{end}}
 nop{{end}}
 pushad
+xor {{ rand_int }}, {{ rand_int }}
+inc {{ rand_reg }}
+add {{ rand_reg }}, {{ rand_int }}
 popad{{end}}
 pushfd
 popfd{{end}}
